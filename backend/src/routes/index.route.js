@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const deviceRoute = require('./thietbi.route');
-const authRoute = require('./taikhoan.route');
-const ticketRoute = require('./phieusuachua.route'); // Nhúng file ticket
+const deviceRoute = require('./device.route');
+const authRoute = require('./account.route');
+const ticketRoute = require('./ticket.route'); // Nhúng file ticket
 
 // Định tuyến API
 router.use('/devices', deviceRoute);
