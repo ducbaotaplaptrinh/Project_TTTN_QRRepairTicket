@@ -1,5 +1,13 @@
 # React + Vite
 
+## Environment variables
+
+Copy `.env.example` to `.env.local` for local development and set `VITE_API_BASE_URL` to the backend origin without `/api` (for example, `http://localhost:5000`). API requests add the documented `/api/...` paths. For a phone on Wi-Fi, use the backend computer's LAN IP instead of `localhost`. The local `.env.local` file is ignored by Git.
+
+For staging, create `.env.staging` with its backend URL and run `npm run build -- --mode staging`. For production, set `VITE_API_BASE_URL` in the deployment environment (or `.env.production`) before building. Vite embeds these values at build time, so rebuild/redeploy after changing them.
+
+Restart the Vite dev server after changing a local env file.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

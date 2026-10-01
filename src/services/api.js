@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-// Đổi port theo port thực tế mà backend chạy 
-const API_BASE_URL = 'https://tttn-backend-qr.vercel.app/';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -21,19 +20,19 @@ apiClient.interceptors.request.use((config) => {
 
 export const authApi = {
   login: async (credentials) => {
-    const response = await apiClient.post('/auth/login', credentials);
+    const response = await apiClient.post('/api/auth/login', credentials);
     return response.data;
   },
 };
 
 export const devicesApi = {
   createDevice: async (deviceData) => {
-    const response = await apiClient.post('/devices', deviceData);
+    const response = await apiClient.post('/api/devices', deviceData);
     return response.data;
   },
 
   getDeviceByCode: async (deviceCode) => {
-    const response = await apiClient.get(`/devices/${encodeURIComponent(deviceCode)}`);
+    const response = await apiClient.get(`/api/devices/${encodeURIComponent(deviceCode)}`);
     return response.data;
   },
 };
@@ -41,29 +40,29 @@ export const devicesApi = {
 export const ticketApi = {
   // Lấy danh sách máy cho Dashboard
   getAllTickets: async () => {
-    const response = await apiClient.get('/tickets');
+    const response = await apiClient.get('/api/tickets');
     return response.data;
   },
 
   // Tạo phiếu tiếp nhận mới & nhận mã QR
   createTicket: async (ticketData) => {
-    const response = await apiClient.post('/tickets', ticketData);
+    const response = await apiClient.post('/api/tickets', ticketData);
     return response.data;
   },
 
   initSession: async () => {
-    const response = await apiClient.post('/tickets/init-session');
+    const response = await apiClient.post('/api/tickets/init-session');
     return response.data;
   },
 
   verifyTicketToken: async (token) => {
-    const response = await apiClient.get(`/tickets/session/${encodeURIComponent(token)}`);
+    const response = await apiClient.get(`/api/tickets/session/${encodeURIComponent(token)}`);
     return response.data;
   },
 
   submitTicketDetails: async (token, ticketData) => {
     const response = await apiClient.post(
-      `/tickets/session/${encodeURIComponent(token)}/submit`,
+      `/api/tickets/session/${encodeURIComponent(token)}/submit`,
       ticketData
     );
     return response.data;
@@ -71,13 +70,13 @@ export const ticketApi = {
 
   // Tra cứu tiến độ khi quét mã QR
   getTicketById: async (id) => {
-    const response = await apiClient.get(`/tickets/${id}`);
+    const response = await apiClient.get(`/api/tickets/${id}`);
     return response.data;
   },
 
   // Kỹ thuật viên đổi trạng thái / cập nhật ghi chú
   updateTicketStatus: async (id, data) => {
-    const response = await apiClient.patch(`/tickets/${id}`, data);
+    const response = await apiClient.patch(`/api/tickets/${id}`, data);
     return response.data;
   },
 };

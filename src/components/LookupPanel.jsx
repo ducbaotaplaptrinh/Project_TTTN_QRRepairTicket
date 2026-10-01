@@ -1,5 +1,12 @@
 import { AlertCircle, ArrowRight, Phone, QrCode, Search, Wrench } from 'lucide-react';
 
+const repairStages = [
+  { title: 'Tiếp nhận máy', description: 'Ghi nhận yêu cầu và thông tin thiết bị.' },
+  { title: 'Chẩn đoán lỗi', description: 'Kiểm tra nguyên nhân và hướng khắc phục.' },
+  { title: 'Đang xử lý', description: 'Kỹ thuật viên tiến hành sửa chữa.' },
+  { title: 'Đã hoàn tất', description: 'Kiểm tra lần cuối trước khi bàn giao.' },
+];
+
 export default function LookupPanel({
   lookupType,
   setLookupType,
@@ -129,6 +136,25 @@ export default function LookupPanel({
           )}
         </div>
       )}
+
+      <section className="app-repair-flow" aria-labelledby="repair-flow-title">
+        <div className="app-repair-flow-heading">
+          <div>
+            <p className="app-repair-flow-kicker">THEO DÕI SỬA CHỮA</p>
+            <h3 id="repair-flow-title">Tiến trình xử lý thiết bị</h3>
+          </div>
+          <span className="app-repair-flow-count">04 giai đoạn</span>
+        </div>
+        <ol className="app-repair-flow-list">
+          {repairStages.map((stage, index) => (
+            <li className="app-repair-flow-item" key={stage.title}>
+              <span className="app-repair-flow-number">0{index + 1}</span>
+              <h4>{stage.title}</h4>
+              <p>{stage.description}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
     </div>
   );
 }

@@ -293,15 +293,13 @@ export default function App() {
 
     try {
       const response = await authApi.login(loginForm);
-      const authData = response.data || response;
+      const authData = response?.data?.data || response?.data || response || {};
       const token = authData.token || authData.accessToken || authData.access_token ||
         authData.jwt || authData.access?.token;
       const userData = authData.user || authData.employee || response.user || response.employee || authData;
       const accountId = userData.id || userData.AccountID;
       const username = userData.username || userData.Username;
-      if (!token && !accountId && !username) {
-        throw new Error('Thông tin đăng nhập chưa hợp lệ. Vui lòng thử lại.');
-      }
+      if (!token) throw new Error('API đăng nhập chưa trả về token xác thực. Vui lòng kiểm tra phản hồi backend.');
 
       const user = {
         id: accountId,
@@ -331,6 +329,14 @@ export default function App() {
     localStorage.removeItem('authUser');
     setCurrentUser(null);
     setActiveTab('lookup');
+  };
+
+  const promptLogin = (message) => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authUser');
+    setCurrentUser(null);
+    setLoginError(message);
+    setShowLoginModal(true);
   };
 
   const handleCustomerLookup = async (e) => {
@@ -378,6 +384,11 @@ export default function App() {
   };
 
   const handleStartCustomerTicket = async () => {
+    if (!currentUser || !localStorage.getItem('authToken')) {
+      promptLogin('Vui lòng đăng nhập tài khoản nhân viên để tạo phiếu tiếp nhận.');
+      return;
+    }
+
     setIsStartingCustomerTicket(true);
     setCustomerTicketError('');
     setTicketLoadError('');
@@ -390,6 +401,10 @@ export default function App() {
       });
       setActiveTab('customerQr');
     } catch (error) {
+      if (error?.response?.status === 401) {
+        promptLogin('Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.');
+        return;
+      }
       setCustomerTicketError(getFriendlyErrorMessage(error, 'Chưa tạo được phiếu sửa chữa. Vui lòng thử lại sau.'));
     } finally {
       setIsStartingCustomerTicket(false);
@@ -411,6 +426,10 @@ export default function App() {
         qrUrl: createTicketFormUrl(ticketData),
       });
     } catch (error) {
+      if (error?.response?.status === 401) {
+        promptLogin('Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.');
+        return;
+      }
       setTicketCreationError(getFriendlyErrorMessage(error, 'Chưa tạo được phiếu. Vui lòng thử lại sau.'));
     } finally {
       setIsCreatingTicket(false);
@@ -1069,6 +1088,22 @@ export default function App() {
         )}
 
       </div>
+      <footer className="app-footer" aria-label="Chân trang">
+        <div className="app-footer-brand">
+          <span className="app-footer-mark"><Wrench className="w-4 h-4" /></span>
+          <div>
+            <p className="app-footer-title">QR Repair</p>
+            <p className="app-footer-caption">Tiếp nhận và theo dõi sửa chữa thiết bị</p>
+          </div>
+        </div>
+
+        <nav className="app-footer-links" aria-label="Liên kết nhanh">
+          <button type="button" onClick={() => setActiveTab('lookup')}>Tra cứu phiếu</button>
+          <button type="button" onClick={() => { setScannerError(''); setActiveTab('scan'); }}>Quét QR</button>
+        </nav>
+
+        <p className="app-footer-copyright">© {new Date().getFullYear()} QR Repair</p>
+      </footer>
     </div>
   );
 }
