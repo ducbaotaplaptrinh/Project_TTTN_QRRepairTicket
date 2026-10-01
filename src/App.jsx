@@ -94,6 +94,16 @@ export default function App() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
+  const isLocalAdminDevice = (() => {
+    const host = window.location.hostname || '';
+    return host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0'
+      || /^10\./.test(host)
+      || /^192\.168\./.test(host)
+      || /^172\.(1[6-9]|2\d|3[01])\./.test(host);
+  })();
+
+  const canShowKtvLogin = isLocalAdminDevice;
+
   const [ticketAccess, setTicketAccess] = useState(getTicketAccessFromUrl);
   const [ticketVerificationStatus, setTicketVerificationStatus] = useState(() => {
     const access = getTicketAccessFromUrl();
@@ -326,6 +336,7 @@ export default function App() {
     setLookupSearched(true);
     setIsLoadingTickets(true);
     setTicketLoadError('');
+    setCustomerTicketError('');
     try {
       const serverTickets = unwrapTicketList(await ticketApi.getAllTickets());
       setTickets(serverTickets);
@@ -367,6 +378,7 @@ export default function App() {
   const handleStartCustomerTicket = async () => {
     setIsStartingCustomerTicket(true);
     setCustomerTicketError('');
+    setTicketLoadError('');
     try {
       const ticketData = await createTicketDraft();
       setCurrentCreatedTicket({
@@ -584,7 +596,7 @@ export default function App() {
               )}
             </div>
 
-            {currentUser ? (
+            {canShowKtvLogin && (currentUser ? (
               <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
                 <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg hidden md:inline-block">
                   KTV: {currentUser.name}
@@ -604,7 +616,7 @@ export default function App() {
               >
                 <Lock className="w-3.5 h-3.5" /> Đăng Nhập KTV
               </button>
-            )}
+            ))}
           </div>
         </header>
 
@@ -716,19 +728,14 @@ export default function App() {
                 </button>
               </form>
 
-              {ticketLoadError && !/404/i.test(ticketLoadError) && (
+              {(ticketLoadError || customerTicketError) && !/404/i.test(ticketLoadError || customerTicketError) && (
                 <div className="max-w-xl mx-auto mt-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm flex items-center justify-center gap-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" /> {ticketLoadError}
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" /> {(ticketLoadError || customerTicketError)}
                 </div>
               )}
 
               <div className="mt-6 border-t border-slate-100 pt-5">
                 <p className="text-sm text-slate-500 mb-3">Chưa có phiếu sửa chữa?</p>
-                {customerTicketError && (
-                  <div className="max-w-xl mx-auto mb-3 p-3 bg-red-50 text-red-700 rounded-xl text-sm flex items-center justify-center gap-2">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" /> {customerTicketError}
-                  </div>
-                )}
                 <div className="flex flex-col sm:flex-row justify-center gap-2.5">
                   <button
                     type="button"
