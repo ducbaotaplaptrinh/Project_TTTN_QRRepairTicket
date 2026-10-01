@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Điều Khiển | TTTN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="glass-panel large">
+        <div class="dashboard-header">
+            <h2>Xin chào, <span id="userName">Lễ Tân</span></h2>
+            <button class="nav-link" id="logoutBtn" style="color: var(--error);">Đăng xuất</button>
+        </div>
+        
+        <div style="text-align: center; margin-bottom: 20px;">
+            <p style="color: var(--text-muted); margin-bottom: 15px;">Tạo mã QR để khách hàng có thể quét và điền thông tin phiếu sửa chữa.</p>
+            <button id="generateBtn" style="max-width: 300px;">TẠO MÃ QR CHO KHÁCH</button>
+        </div>
+
+        <div class="error-msg" id="errorMsg"></div>
+        
+        <div class="qr-container" id="qrContainer" style="display: none;">
+            <h3 style="margin-bottom: 15px; color: var(--success);">Đã tạo mã QR thành công!</h3>
+            <img id="qrImage" src="" alt="Mã QR cho khách hàng">
+            <div class="timer">Hết hạn sau: <span id="countdown">15:00</span></div>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Mã Code: <strong id="ticketCode" style="color: var(--primary-color);"></strong></p>
+        </div>
+    </div>
+    
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
