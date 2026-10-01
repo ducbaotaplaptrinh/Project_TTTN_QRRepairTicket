@@ -32,8 +32,8 @@ button {
 }
 
 .app-root {
-  padding-top: 28px;
-  padding-bottom: 40px;
+  padding-top: 20px;
+  padding-bottom: 32px;
 }
 
 .app-shell {
@@ -44,29 +44,28 @@ button {
 .app-shell-lookup {
   position: relative;
   display: flex;
-  min-height: calc(100vh - 68px);
+  min-height: auto;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+  gap: 22px;
 }
 
 @media (min-width: 768px) {
   .app-lookup-view {
-    position: absolute;
-    top: calc(50% + 6px);
-    right: 0;
-    left: 0;
+    position: static;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    transform: translateY(-50%);
+    width: 100%;
+    transform: none;
   }
 
   .app-lookup-panel {
     width: 100%;
     max-width: 760px;
-    padding: 32px;
+    padding: 22px 28px 18px;
   }
 
   .app-lookup-panel h2 {
@@ -363,7 +362,7 @@ textarea {
 .app-shell {
   width: 100%;
   max-width: 1240px;
-  gap: 22px;
+  gap: 18px;
 }
 
 .app-header {

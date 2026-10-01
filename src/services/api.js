@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Đổi port theo port thực tế mà backend chạy 
-const API_BASE_URL = 'http://10.50.195.212:5000/api';
+const API_BASE_URL = 'https://tttn-backend-qr.vercel.app/';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

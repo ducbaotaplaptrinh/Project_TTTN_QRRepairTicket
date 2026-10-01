@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { authApi, devicesApi, ticketApi } from './services/api';
+import Header from './components/Header';
+import LoginModal from './components/LoginModal';
+import LookupPanel from './components/LookupPanel';
 import { 
-  Monitor, QrCode, Search, Printer, CheckCircle2, 
+  QrCode, Search, Printer, CheckCircle2, 
   AlertCircle, Wrench, ArrowRight, Camera, 
-  ListFilter, LayoutDashboard, PlusCircle, X,
-  Lock, LogIn, LogOut, Phone, ShieldCheck, Clock3
+  ListFilter, X, Clock3
 } from 'lucide-react';
 
 const serviceTypes = [
@@ -540,261 +542,47 @@ export default function App() {
     <div className="app-root min-h-screen bg-slate-50/70 text-slate-800 flex flex-col items-center p-4 md:p-8">
       <div className={`app-shell w-full max-w-5xl space-y-6 ${activeTab === 'lookup' ? 'app-shell-lookup' : ''}`}>
 
-        {/* Header */}
-        <header className="app-header bg-white p-4 md:px-6 md:py-4 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="app-brand flex items-center gap-3.5">
-            <div className="app-brand-icon p-2.5 bg-blue-600 text-white rounded-xl shadow-sm shadow-blue-500/20">
-              <Monitor className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-lg md:text-xl font-bold text-slate-900 leading-tight">Cổng Tiếp Nhận & Tra Cứu Bảo Hành Thiết Bị</h1>
-              <p className="text-xs text-slate-500 mt-0.5">Tra cứu tiến độ qua mã QR / SĐT & Quản lý điều phối sửa chữa</p>
-            </div>
-          </div>
+        <Header
+          currentUser={currentUser}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          canShowKtvLogin={canShowKtvLogin}
+          handleLogout={handleLogout}
+          setLoginError={setLoginError}
+          setShowLoginModal={setShowLoginModal}
+          setScannerError={setScannerError}
+        />
 
-          <div className="app-header-controls flex items-center gap-2">
-            <div className="app-navigation flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl text-xs md:text-sm font-medium">
-              {!currentUser && (
-                <button
-                  onClick={() => setActiveTab('lookup')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                    activeTab === 'lookup' ? 'bg-white text-blue-600 shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <Search className="w-4 h-4" /> <span className="app-nav-label">Khách tra cứu</span>
-                </button>
-              )}
+        <LoginModal
+          showLoginModal={showLoginModal}
+          setShowLoginModal={setShowLoginModal}
+          loginForm={loginForm}
+          setLoginForm={setLoginForm}
+          loginError={loginError}
+          isLoggingIn={isLoggingIn}
+          handleLogin={handleLogin}
+        />
 
-              <button
-                onClick={() => { setActiveTab('scan'); setScannerError(''); }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                  activeTab === 'scan' ? 'bg-white text-blue-600 shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Camera className="w-4 h-4" /> <span className="app-nav-label">Quét QR</span>
-              </button>
-
-              {currentUser && (
-                <>
-                  <button
-                    onClick={() => setActiveTab('dashboard')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                      activeTab === 'dashboard' ? 'bg-white text-blue-600 shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    <LayoutDashboard className="w-4 h-4" /> <span className="app-nav-label">Quản Lý</span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('create')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                      activeTab === 'create' ? 'bg-white text-blue-600 shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    <PlusCircle className="w-4 h-4" /> <span className="app-nav-label">Tạo phiếu</span>
-                  </button>
-                </>
-              )}
-            </div>
-
-            {canShowKtvLogin && (currentUser ? (
-              <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg hidden md:inline-block">
-                  KTV: {currentUser.name}
-                </span>
-                <button
-                  onClick={handleLogout}
-                  title="Đăng xuất"
-                  className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => { setLoginError(''); setShowLoginModal(true); }}
-                className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow-sm"
-              >
-                <Lock className="w-3.5 h-3.5" /> Đăng Nhập KTV
-              </button>
-            ))}
-          </div>
-        </header>
-
-        {/* Modal Đăng nhập KTV */}
-        {showLoginModal && (
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl relative border border-slate-100">
-              <button
-                onClick={() => setShowLoginModal(false)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <div className="text-center mb-5">
-                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-2.5">
-                  <ShieldCheck className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg font-bold text-slate-800">Đăng Nhập Kỹ Thuật Viên</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Dành riêng cho nhân viên tiếp nhận & sửa chữa</p>
-              </div>
-
-              {loginError && (
-                <div className="mb-4 p-2.5 bg-red-50 text-red-600 text-xs rounded-xl flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  {loginError}
-                </div>
-              )}
-
-              <form onSubmit={handleLogin} className="space-y-3.5">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Tài khoản</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Nhập tên tài khoản"
-                    className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
-                    value={loginForm.username}
-                    onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Mật khẩu</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Nhập mật khẩu"
-                    className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
-                    value={loginForm.password}
-                    onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={isLoggingIn}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl text-sm transition mt-2 flex items-center justify-center gap-2 shadow-sm shadow-blue-500/20"
-                >
-                  <LogIn className="w-4 h-4" /> {isLoggingIn ? 'Đang xác thực...' : 'Đăng Nhập'}
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* 1. Tab Khách Tra Cứu */}
         {activeTab === 'lookup' && (
-          <div className="app-lookup-view space-y-6">
-            <div className="app-lookup-panel bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-slate-200/80 text-center">
-              <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Tra Cứu Tình Trạng Thiết Bị</h2>
-              <p className="text-sm text-slate-500 mt-1 mb-6">
-                Nhập số điện thoại để xem toàn bộ máy đang sửa, hoặc nhập chính xác mã phiếu
-              </p>
-
-              {/* Nút Tab chuyển kiểu tra cứu */}
-              <div className="inline-flex bg-slate-100/90 p-1 rounded-xl mb-6 text-xs md:text-sm font-medium">
-                <button
-                  onClick={() => { setLookupType('phone'); setCustomerTickets([]); setLookupSearched(false); }}
-                  className={`flex items-center gap-2 px-5 py-2 rounded-lg transition-all ${
-                    lookupType === 'phone' ? 'bg-white text-blue-600 shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <Phone className="w-4 h-4" /> Tra cứu theo Số Điện Thoại
-                </button>
-                <button
-                  onClick={() => { setLookupType('ticketId'); setCustomerTickets([]); setLookupSearched(false); }}
-                  className={`flex items-center gap-2 px-5 py-2 rounded-lg transition-all ${
-                    lookupType === 'ticketId' ? 'bg-white text-blue-600 shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <QrCode className="w-4 h-4" /> Tra cứu theo Mã Phiếu
-                </button>
-              </div>
-
-              {/* Thanh tìm kiếm */}
-              <form onSubmit={handleCustomerLookup} className="app-lookup-form flex gap-2.5 max-w-xl mx-auto">
-                <input
-                  type="text"
-                  required
-                  placeholder={lookupType === 'phone' ? 'Ví dụ: 0901234567' : 'Nhập mã phiếu do hệ thống cấp'}
-                  className="flex-1 text-sm border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition"
-                  value={lookupInput}
-                  onChange={(e) => setLookupInput(e.target.value)}
-                />
-                <button
-                  type="submit"
-                  disabled={isLoadingTickets}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl text-sm flex items-center gap-2 transition shadow-sm shadow-blue-500/20"
-                >
-                  <Search className="w-4 h-4" /> {isLoadingTickets ? 'Đang tải...' : 'Tra Cứu'}
-                </button>
-              </form>
-
-              {(ticketLoadError || customerTicketError) && !/404/i.test(ticketLoadError || customerTicketError) && (
-                <div className="max-w-xl mx-auto mt-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm flex items-center justify-center gap-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" /> {(ticketLoadError || customerTicketError)}
-                </div>
-              )}
-
-              <div className="mt-6 border-t border-slate-100 pt-5">
-                <p className="text-sm text-slate-500 mb-3">Chưa có phiếu sửa chữa?</p>
-                <div className="flex flex-col sm:flex-row justify-center gap-2.5">
-                  <button
-                    type="button"
-                    onClick={handleStartCustomerTicket}
-                    disabled={isStartingCustomerTicket}
-                    className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition"
-                  >
-                    <Wrench className="w-4 h-4" /> {isStartingCustomerTicket ? 'Đang tạo phiếu...' : 'Tạo phiếu sửa chữa'}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Danh sách kết quả */}
-            {lookupSearched && (
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold text-slate-700 px-1">
-                  Kết quả tra cứu ({customerTickets.length} thiết bị):
-                </h3>
-
-                {isLoadingTickets ? (
-                  <p className="bg-white p-6 rounded-2xl border border-slate-200 text-center text-sm text-slate-500">Đang tải dữ liệu từ hệ thống...</p>
-                ) : customerTickets.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {customerTickets.map((item) => (
-                      <div
-                        key={item.id}
-                        className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:border-blue-500 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
-                        onClick={() => { setSelectedTicket(item); setActiveTab('detail'); }}
-                      >
-                        <div>
-                          <div className="flex items-center justify-between mb-2.5">
-                            <span className="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">
-                              {item.id}
-                            </span>
-                            {getStatusBadge(item.status)}
-                          </div>
-                          <h4 className="font-bold text-slate-800 text-base">{item.deviceName}</h4>
-                          <p className="text-xs text-slate-500 mt-1 line-clamp-2">Lỗi: {item.issueDescription}</p>
-                        </div>
-
-                        <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-                          <span>Ngày nhận: {item.createdAt}</span>
-                          <span className="text-blue-600 font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                            Xem tiến độ <ArrowRight className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center text-slate-400">
-                    <AlertCircle className="w-12 h-12 mx-auto mb-2.5 text-slate-300" />
-                    <p className="text-sm font-medium">Không tìm thấy thiết bị nào khớp với thông tin bạn vừa nhập.</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          <LookupPanel
+            lookupType={lookupType}
+            setLookupType={setLookupType}
+            setCustomerTickets={setCustomerTickets}
+            setLookupSearched={setLookupSearched}
+            lookupInput={lookupInput}
+            setLookupInput={setLookupInput}
+            isLoadingTickets={isLoadingTickets}
+            ticketLoadError={ticketLoadError}
+            customerTicketError={customerTicketError}
+            handleCustomerLookup={handleCustomerLookup}
+            handleStartCustomerTicket={handleStartCustomerTicket}
+            isStartingCustomerTicket={isStartingCustomerTicket}
+            customerTickets={customerTickets}
+            lookupSearched={lookupSearched}
+            getStatusBadge={getStatusBadge}
+            setSelectedTicket={setSelectedTicket}
+            setActiveTab={setActiveTab}
+          />
         )}
 
         {activeTab === 'customerQr' && currentCreatedTicket && (
